@@ -10,4 +10,23 @@ echo Open('form', array('action'=>  base_url('correcciones/index/corregir_cxc_sa
     echo tagcontent('button', 'Correccion Saldos CxC', array('id'=>'ajaxformbtn','data-target'=>'correccion_k_bod_out','class'=>'btn btn-primary'));
 echo Close('form');
 
+
+echo Open('form', array('action'=>  base_url('correcciones/index/corregir_anticipocliente_saldos'),'method'=>'post'));
+    echo tagcontent('button', 'Correccion Saldos Anticipo CLiente', array('id'=>'ajaxformbtn','data-target'=>'correccion_k_bod_out','class'=>'btn btn-primary'));
+echo Close('form');
+
+
+echo Open('form', array('action'=>  base_url('correcciones/index/corregir_anticipoproveedor_saldos'),'method'=>'post'));
+    echo tagcontent('button', 'Correccion Saldos Anticipo Proveedor', array('id'=>'ajaxformbtn','data-target'=>'correccion_k_bod_out','class'=>'btn btn-primary'));
+echo Close('form');
+
+
+echo Open('form', array('action'=>  base_url('correcciones/index/corregir_costo_inventario_xproducto'),'method'=>'post'));
+    echo tagcontent('button', 'Correccion Inventario x Producto', array('id'=>'ajaxformbtn','data-target'=>'correccion_k_bod_out','class'=>'btn btn-primary'));
+echo Close('form');
+
+echo Open('form', array('action'=>  base_url('correcciones/index/corregir_costo_inventario_total'),'method'=>'post'));
+    echo tagcontent('button', 'Correccion Inventario Total', array('id'=>'ajaxformbtn','data-target'=>'correccion_k_bod_out','class'=>'btn btn-primary'));
+echo Close('form');
+
 echo tagcontent('div', '', array('id'=>'correccion_k_bod_out','class'=>'col-md-12'));
