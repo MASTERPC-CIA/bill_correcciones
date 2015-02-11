@@ -47,7 +47,7 @@ class Index extends MX_Controller {
         function corregir_anticipoproveedor_saldos() {
             $this->load->library('proveedor_anticipo');
             /* Obtenemos saldo_ultimo por cliente para actualizarlos en la nueva tabal bill_cxc_saldos */
-            $cxc_saldo_ultimo = $this->generic_model->get_data( 'bill_cliente_anticipo', array( 'id >' => 0 ), $fields = 'proveedor_id, saldo_ultimo', null, 0, 'proveedor_id' );
+            $cxc_saldo_ultimo = $this->generic_model->get_data( 'bill_proveedor_anticipo', array( 'id >' => 0 ), $fields = 'proveedor_id, saldo_ultimo', null, 0, 'proveedor_id' );
             
             foreach ( $cxc_saldo_ultimo as $value ) {
                 $this->proveedor_anticipo->update_anticipo_saldos($value->proveedor_id, $value->saldo_ultimo);
@@ -62,7 +62,7 @@ class Index extends MX_Controller {
             $cxc_saldo_ultimo = $this->generic_model->get_data( 'bill_kardex', array( 'id >' => 0 ), $fields = 'producto_id, costo_inv_product_ultimo', null, 0, 'producto_id' );
             
             foreach ( $cxc_saldo_ultimo as $value ) {
-                $this->product->update_costo_inventario( $value->producto_id, $value->costo_inventario_product );
+                $this->product->update_costo_inventario( $value->producto_id, $value->costo_inv_product_ultimo );
             }
             echo success_msg('Correccion Finalizada');
         }
