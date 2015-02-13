@@ -10,6 +10,10 @@ echo Open('form', array('action'=>  base_url('correcciones/index/corregir_cxc_sa
     echo tagcontent('button', 'Correccion Saldos CxC', array('id'=>'ajaxformbtn','data-target'=>'correccion_k_bod_out','class'=>'btn btn-primary'));
 echo Close('form');
 
+echo Open('form', array('action'=>  base_url('correcciones/index/corregir_cxp_saldos'),'method'=>'post'));
+    echo tagcontent('button', 'Correccion Saldos C x Pagar ', array('id'=>'ajaxformbtn','data-target'=>'correccion_k_bod_out','class'=>'btn btn-primary'));
+echo Close('form');
+
 
 echo Open('form', array('action'=>  base_url('correcciones/index/corregir_anticipocliente_saldos'),'method'=>'post'));
     echo tagcontent('button', 'Correccion Saldos Anticipo CLiente', array('id'=>'ajaxformbtn','data-target'=>'correccion_k_bod_out','class'=>'btn btn-primary'));

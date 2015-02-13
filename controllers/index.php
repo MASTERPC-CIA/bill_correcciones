@@ -32,8 +32,19 @@ class Index extends MX_Controller {
             echo success_msg('Correccion Finalizada');
         }
         
+        function corregir_cxp_saldos() {
+            $this->load->library('common/cuentasxpagar');
+            /* Obtenemos saldo_ultimo por cliente para actualizarlos en la nueva tabal bill_cxc_saldos */
+            $cxp_saldo_ultimo = $this->generic_model->get_data( 'bill_cxp', array( 'id >' => 0 ), $fields = 'proveedor_id, saldo_ultimo', null, 0, 'proveedor_id' );
+            
+            foreach ( $cxp_saldo_ultimo as $value ) {
+                $this->cuentasxpagar->update_cxp_saldos($value->proveedor_id, $value->saldo_ultimo);
+            }
+            echo success_msg('Correccion Finalizada');
+        }
+        
         function corregir_anticipocliente_saldos() {
-            $this->load->library('cliente_anticipo');
+            $this->load->library('common/cliente_anticipo');
             /* Obtenemos saldo_ultimo por cliente para actualizarlos en la nueva tabal bill_cxc_saldos */
             $cxc_saldo_ultimo = $this->generic_model->get_data( 'bill_cliente_anticipo', array( 'id >' => 0 ), $fields = 'client_id, saldo_ultimo', null, 0, 'client_id' );
             
