@@ -12,6 +12,7 @@ class Index extends MX_Controller {
 	{
  		parent::__construct();
                 $this->user->check_session();
+                set_time_limit(0);
 	}	
         
         function index()
