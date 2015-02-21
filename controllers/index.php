@@ -89,5 +89,41 @@ class Index extends MX_Controller {
             
             echo success_msg('Correccion Finalizada');
         }
+        
+        
+        function corregir_utilidad_venta_bienes() {
+            $this->load->library('common/ventautilidad');
+            /* Obtenemos saldo_ultimo por cliente para actualizarlos en la nueva tabal bill_cxc_saldos */
+            $utilidad = $this->generic_model->get_data( 
+                        'bill_kardex', 
+                        array( 'transaccion_cod' => '01','doc_id_ajuste' => null, 'estado >'=> 0 ), 
+                        $fields = 'docid,costo_prom_total, precio_venta_total, utilidad_venta', 
+                        null, 
+                        0 
+                    );
+            
+            foreach ($utilidad as $value) {
+                $this->ventautilidad->save_utilidad_venta($value->docid, $value->costo_prom_total, $value->precio_venta_total, 0, '01');
+            }            
+            
+            echo success_msg('Correccion Finalizada');
+        }
+        function corregir_utilidad_venta_servicios() {
+            $this->load->library('common/ventautilidad');
+            /* Obtenemos saldo_ultimo por cliente para actualizarlos en la nueva tabal bill_cxc_saldos */
+            $utilidad = $this->generic_model->get_data( 
+                        'billing_facturaventa', 
+                        array( 'estado >'=> 0, 'subtnetoservicios >'=>0 ), 
+                        $fields = 'codigofactventa, subtnetoservicios', 
+                        null, 
+                        0 
+                    );
+            
+            foreach ($utilidad as $value) {
+                $this->ventautilidad->save_utilidad_venta($value->codigofactventa, 0, 0, $value->subtnetoservicios, '01');
+            }            
+            
+            echo success_msg('Correccion Finalizada');
+        }
 
 }

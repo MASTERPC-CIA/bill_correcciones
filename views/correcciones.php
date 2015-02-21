@@ -6,7 +6,7 @@
  * and open the template in the editor.
  */
 
-echo Open('form', array('action'=>  base_url('correcciones/index/corregir_cxc_saldos'),'method'=>'post'));
+/*echo Open('form', array('action'=>  base_url('correcciones/index/corregir_cxc_saldos'),'method'=>'post'));
     echo tagcontent('button', 'Correccion Saldos CxC', array('id'=>'ajaxformbtn','data-target'=>'correccion_k_bod_out','class'=>'btn btn-primary'));
 echo Close('form');
 
@@ -31,6 +31,15 @@ echo Close('form');
 
 echo Open('form', array('action'=>  base_url('correcciones/index/corregir_costo_inventario_total'),'method'=>'post'));
     echo tagcontent('button', 'Correccion Inventario Total', array('id'=>'ajaxformbtn','data-target'=>'correccion_k_bod_out','class'=>'btn btn-primary'));
+echo Close('form');
+*/
+
+echo Open('form', array('action'=>  base_url('correcciones/index/corregir_utilidad_venta_bienes'),'method'=>'post'));
+    echo tagcontent('button', 'Correccion Utilidad Venta Bienes', array('id'=>'ajaxformbtn','data-target'=>'correccion_k_bod_out','class'=>'btn btn-primary'));
+echo Close('form');
+
+echo Open('form', array('action'=>  base_url('correcciones/index/corregir_utilidad_venta_servicios'),'method'=>'post'));
+    echo tagcontent('button', 'Correccion Utilidad Venta Servicios', array('id'=>'ajaxformbtn','data-target'=>'correccion_k_bod_out','class'=>'btn btn-primary'));
 echo Close('form');
 
 echo tagcontent('div', '', array('id'=>'correccion_k_bod_out','class'=>'col-md-12'));
