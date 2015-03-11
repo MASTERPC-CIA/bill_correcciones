@@ -125,5 +125,91 @@ class Index extends MX_Controller {
             
             echo success_msg('Correccion Finalizada');
         }
+     
+        
+        public function corregir_costo_venta() {
+            $this->load->library('common/facturaventa_data');
+            $this->load->library('common/asientocontable');
+            $this->load->library('common/contaconfigcuentas');
+            $this->load->library('common/product');
+            $this->load->library('common/ventautilidad');
+            $this->load->library('common/kardex');
+            
+            /* eliminamos los asientos contables de costo de venta que estan */
+            $this->generic_model->delete('bill_asiento_contable_det', array('tipotransaccion_cod'=>'25') );
+            $this->generic_model->delete('bill_asiento_contable', array('tipotransaccion_cod'=>'25') );
+            $this->generic_model->delete('bill_venta_utilidad', array('tipotransaccion_cod'=>'01') );
+                                    
+            $facturas = $this->generic_model->get_data( 
+                        'billing_facturaventa', 
+                        array('estado'=>'2', 'puntoventaempleado_tiposcomprobante_cod'=>'01'), 
+                        'codigofactventa'
+                    );
+            
+                    foreach ($facturas as $venta) {
+                        $res = $this->save_ac_costo_venta($venta->codigofactventa);
+                    }
+                    
+                    if($res > 0){
+                        echo success_info_msg(' Correccion de Costo de Venta Completado');
+                    }
+        }
 
+
+        /* Registrar el asiento ocntable de costo de venta*/        
+    private function save_ac_costo_venta( $venta_id ) {
+        $detalle_venta = $this->facturaventa_data->obtener_detalle_factura($venta_id);
+
+        $tot_costo_venta = 0;
+        $tot_pvp_bienes = 0;
+        $tot_pvp_servicios = 0;
+        foreach ($detalle_venta as $val) {
+            $product_data = $this->product->get_product_data($val->Producto_codigo);
+            
+            /* El costo de venta es solo para inventario no para servicios*/
+            if($product_data->esServicio == 0){
+                $costo_prom_total = $this->kardex->get_costo_prom_total($val->Producto_codigo, '01', $venta_id);
+//                $tot_costo_venta += $product_data->costopromediokardex * $val->itemcantidad;
+                $tot_costo_venta += $costo_prom_total;
+                $tot_pvp_bienes += $val->itemprecioxcantidadneto;
+            }elseif($product_data->esServicio == 1){
+                $tot_pvp_servicios += $val->itemprecioxcantidadneto;                
+            }
+        }
+        
+        if($tot_costo_venta > 0) {
+            /* 25 = Costo Venta*/
+            $ac_id = $this->asientocontable->save_ac('25', $venta_id, 'COSTO VENTA');
+
+              $cta_costo_venta = $this->contaconfigcuentas->get_setting_account('037');        
+              $cta_inventario = $this->contaconfigcuentas->get_setting_account('021');
+              /* 
+               * entra costo de venta, sale inventario
+               */          
+                $asiento_det_data = array(
+                    'asiento_contable_id' => $ac_id,
+                    'cuenta_cont_id' => $cta_costo_venta,
+                    'debito' => $tot_costo_venta,
+                    'credito' => 0,
+                    'tipotransaccion_cod' => '25',
+                    'doc_id' => $venta_id,
+                    'detalle' => 'COSTO VENTA, ENTRA C.V.',
+                );
+                $ac_det_id = $this->generic_model->save($asiento_det_data,'bill_asiento_contable_det');        
+
+                $asiento_det_data = array(
+                    'asiento_contable_id' => $ac_id,
+                    'cuenta_cont_id' => $cta_inventario,
+                    'debito' => 0,
+                    'credito' => $tot_costo_venta,
+                    'tipotransaccion_cod' => '25',
+                    'doc_id' => $venta_id,
+                    'detalle' => 'COSTO VENTA, SALE INVENTARIO',
+                );
+                $ac_det_id = $this->generic_model->save($asiento_det_data,'bill_asiento_contable_det');            
+        }
+
+            $res = $this->ventautilidad->save_utilidad_venta($venta_id, $tot_costo_venta, $tot_pvp_bienes, $tot_pvp_servicios, '01'); /* Tipo transaccion 01 = venta */
+            return $res;
+    }
 }
