@@ -19,7 +19,7 @@ class Index extends MX_Controller {
         {
             $res['view'] = $this->load->view('correcciones','',TRUE);
             $res['slidebar'] = $this->load->view('slidebar','',TRUE);
-            $this->load->view('templates/dashboard',$res);
+            $this->load->view('common/templates/dashboard',$res);
         }
         
         function corregir_cxc_saldos() {
@@ -211,5 +211,5 @@ class Index extends MX_Controller {
 
             $res = $this->ventautilidad->save_utilidad_venta($venta_id, $tot_costo_venta, $tot_pvp_bienes, $tot_pvp_servicios, '01'); /* Tipo transaccion 01 = venta */
             return $res;
-    }
+    }       
 }
