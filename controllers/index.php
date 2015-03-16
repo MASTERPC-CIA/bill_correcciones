@@ -197,10 +197,6 @@ class Index extends MX_Controller {
         return $res;
     }
 
-    function a() {
-        
-    }
-    
     function reset_cuentas() {
         /*
          * DELETE FROM bill_cuentabancaria WHERE tipo_id!=4;
