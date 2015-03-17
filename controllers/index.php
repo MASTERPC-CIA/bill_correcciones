@@ -223,9 +223,10 @@ class Index extends MX_Controller {
 
 
         $saldo = $this->generic_model->get_val_where('bill_cuentabancaria cta', array('cta.banco_id' => 'cs.banco_id'), 'saldo');
+        
         $where_data = null;
         $table_name = 'bill_cuentabancaria_saldos cs';
-        $data_set = array('saldo ' => $saldo);
+        $data_set = array('saldo1 ' => $saldo);
         $this->generic_model->update($table_name, $data_set, $where_data);
 
         echo '<br>Saldos de cuentas actualizados a saldos iniciales';
