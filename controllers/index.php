@@ -228,5 +228,47 @@ class Index extends MX_Controller {
 
         echo '<br>Saldos de cuentas actualizados a saldos iniciales';
     }
+    /*
+-- Verificar si cheque tiene asiento en la tabla nueva
+SELECT * FROM bill_cheque_pago WHERE comprobante_id=305;
+SELECT * FROM bill_asiento_contable_det WHERE doc_id=305 and tipotransaccion_cod = 21;
+SELECT * FROM bill_asiento_contable WHERE doc_id = 305 and tipotransaccion_cod = 21;
+-- si no esta lo buscamos en la tabla antigua (en la tabla antigua se registraba con el id del comp_venta
+SELECT * FROM bill_cheque_pago WHERE comprobante_id=300;
+SELECT * FROM bill_comprob_pago WHERE id = 300 AND estado != -1;
+SELECT * FROM billing_contaasientocontable WHERE docid=912  AND tipotransaccion_cod=21;
+-- si esta aqui, copiamos este asiento a las tablas bill_asientocontable y det
+SELECT * FROM billing_contaasientocontable WHERE docid=912  AND tipotransaccion_cod=21;
+SELECT * FROM bill_asiento_contable WHERE id=85 AND tipotransaccion_cod=2;
+SELECT * FROM bill_asiento_contable_det WHERE asiento_contable_id = 85;
+
+INSERT INTO bill_asiento_contable
+(anio, mes_id, fecha, hora, estado, tipotransaccion_cod, doc_id)
+SELECT DISTINCT
+	EXTRACT(YEAR FROM ac.fecha) AS anio, 
+	EXTRACT(MONTH FROM ac.fecha) AS mes_id,
+	ac.fecha,
+	ac.hora,
+	ac.estado,
+	28 as tipotransaccion_cod,
+	cp.doc_id
+FROM billing_contaasientocontable ac
+JOIN bill_comprob_pago cp ON ac.docid = cp.doc_id AND ac.docid = 912	
+;
+
+INSERT INTO bill_asiento_contable_det
+(asiento_contable_id, cuenta_cont_id, debito, credito, tipotransaccion_cod, doc_id, detalle)
+SELECT
+	85 AS asiento_id,
+	aca.contacuentasplan_cod,
+	aca.debe,
+	aca.haber,
+	28 as tipotransaccion_cod,
+	aca.docid,
+	aca.descripcion
+FROM billing_contaasientocontable aca
+JOIN bill_comprob_pago cp ON aca.docid = cp.doc_id AND aca.docid = 912
+;
+     *      */
 
 }
