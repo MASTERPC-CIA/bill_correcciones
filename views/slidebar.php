@@ -3,7 +3,7 @@
                 <ul class="nav" id="side-menu">
                     <li class="sidebar-search">
                         <?php
-                            echo $this->load->view('login/user_logo','',TRUE);
+//                            echo $this->load->view('login/user_logo','',TRUE);
                         ?>
                     </li>
 
