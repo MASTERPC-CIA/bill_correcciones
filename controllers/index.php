@@ -223,12 +223,151 @@ class Index extends MX_Controller {
 
         $table_name = 'bill_cuentabancaria_saldos cs';
         foreach ($banco as $dato) {
-            $where_data = array('cs.banco_id'=>$dato->banco_id);
-            
+            $where_data = array('cs.banco_id' => $dato->banco_id);
+
             $data_set = array('saldo' => $dato->saldo);
             $this->generic_model->update($table_name, $data_set, $where_data);
         }
 
         echo '<br>Saldos de cuentas actualizados a saldos iniciales';
     }
+
+    function tiene_asiento($comprobante_id, $id_cheque_pago) {
+        //Verificar si tiene asiento en la tabla nueva bill_asiento_contable
+//        $comprobante_id = 389;
+        $asiento_id_nueva = $this->generic_model->get_val_where('bill_asiento_contable_det acd', array('acd.doc_id_pago' => $id_cheque_pago, 'tipotransaccion_cod ' => 21, 'acd.tipo_pago ' => 04), 'asiento_contable_id');
+
+        //Si NO tiene asiento en la tabla nueva
+        if ($asiento_id_nueva == -1) {
+            //se busca si tiene asiento en la tabla antigua
+            //Comprobante de venta, con este se vinculaba en la tabla antigua billing_contaasientocontable
+            $doc_id = $this->generic_model->get_val_where('bill_comprob_pago cp', array('cp.id' => $comprobante_id, 'estado !=' => '-1'), 'doc_id');
+            $asiento_id_antig = $this->generic_model->get_val_where('billing_contaasientocontable ac', array('ac.docid' => $doc_id, 'tipotransaccion_cod' => 21), 'idasientocontable');
+            echo ' --- Id tabla antigua: ' . $asiento_id_antig;
+            if ($asiento_id_antig == -1) {
+                //Si no esta en ninguna de las 2 tablas hay que crear un nuevo asiento para el cheque
+//                return false;
+                echo $id_cheque_pago . ' No esta en ninguna de las 2 tablas';
+                return false;
+            } else {//Si el cheque esta en la tabla antigua
+                //Transferimos el asiento contable
+                echo ' Registrado en la antigua';
+                return $asiento_id_antig;
+            }
+        } else {
+            echo ' Registrado en tabla nueva';
+            return false;
+        }
+    }
+
+    function asientos_transfer_all() {
+        /*
+         * -- registro tabla bill_asiento_contable
+          INSERT INTO bill_asiento_contable
+          (anio, mes_id, fecha, hora, estado, tipotransaccion_cod, doc_id)
+          SELECT DISTINCT
+          EXTRACT(YEAR FROM ac.fecha) AS anio,
+          EXTRACT(MONTH FROM ac.fecha) AS mes_id,
+          ac.fecha,
+          ac.hora,
+          ac.estado,
+          28 as tipotransaccion_cod,
+          cp.doc_id
+          FROM billing_contaasientocontable ac
+          JOIN bill_comprob_pago cp ON ac.docid = cp.doc_id AND ac.docid = 912
+          ;
+          -- registro tabla bill_asiento_contable_det
+          INSERT INTO bill_asiento_contable_det
+          (asiento_contable_id, cuenta_cont_id, debito, credito, tipotransaccion_cod, doc_id, detalle)
+          SELECT
+          85 AS asiento_id,
+          aca.contacuentasplan_cod,
+          aca.debe,
+          aca.haber,
+          28 as tipotransaccion_cod,
+          aca.docid,
+          aca.descripcion
+          FROM billing_contaasientocontable aca
+          JOIN bill_comprob_pago cp ON aca.docid = cp.doc_id AND aca.docid = 912
+          ;
+         *          */
+
+
+        $fecha = date("Y-n-j"); //fecha de hoy
+        $anio = date("Y"); //anio actual
+        $mes = date("n"); //mes actual
+//        $hora_actual = strtotime('-6 hour', strtotime(date('H:i:s', time())));
+        $hora_actual = strtotime(date('H:i:s', time()));
+
+        $hora = date('H:i:s', $hora_actual);
+
+        /* Todos los ids de los cheques para buscarlos */
+        $cheques_ids = $this->generic_model->get('bill_cheque_pago', null, 'id');
+        //Registrar movimiento bancario en bill_cuentabancaria
+
+        foreach ($cheques_ids as $cheque_id) {
+
+            echo '<br>'.$cheque_id->id;
+            $comprobante_id = $this->generic_model->get_val_where('bill_cheque_pago', array('id =' => $cheque_id->id), 'comprobante_id');
+            $asiento_id = $this->tiene_asiento($comprobante_id, $cheque_id->id);
+
+            //Verificacion/Creacion y registro de asientos contables del cheque.
+            if ($asiento_id != false) {//Si no existe tenemos que transferir el asiento
+//                echo ' no tiene registrado asiento';
+//            $this->crear_asiento_cheque($param);
+                $table_name = 'bill_asiento_contable';
+
+
+                /* Registro de asiento contable de la tabla antigua a la nueva */
+                $where_asiento = array('idasientocontable =' => $asiento_id);
+                $asiento_contable = $this->generic_model->get('billing_contaasientocontable ac', $where_asiento, 'ac.*, EXTRACT(YEAR FROM fecha) anio, EXTRACT(MONTH FROM fecha) mes_id,', null, 0, null, null, array('ac.idasientocontable'));
+                $asiento_contable_det = $this->generic_model->get('billing_contaasientocontable ac', $where_asiento); //se usa 2 consultas porque se necesita en una agrupadas y en otra el detalle
+                $doc_id = $this->generic_model->get_val_where('bill_comprob_pago cp', array('cp.id' => $comprobante_id, 'estado !=' => '-1'), 'doc_id');
+
+                $datos_bill_asiento_contable = array();
+                $datos_bill_asiento_contable_det = array();
+
+                foreach ($asiento_contable as $row) {
+//                    echo 'Asiento contable:<br>';
+                    $datos_bill_asiento_contable['anio'] = $anio;
+                    $datos_bill_asiento_contable['mes_id'] = $mes;
+                    $datos_bill_asiento_contable['fecha'] = $fecha;
+                    $datos_bill_asiento_contable['hora'] = $hora;
+                    $datos_bill_asiento_contable['estado'] = $row->estado;
+                    $datos_bill_asiento_contable['user_id'] = $this->user->id;
+                    $datos_bill_asiento_contable['tipotransaccion_cod'] = 28;
+                    $datos_bill_asiento_contable['doc_id'] = $doc_id;
+                    $datos_bill_asiento_contable['detalle'] = 'Registro de cheques de pago desde cuentas bancarias';
+//                    print_r($row);
+
+
+                    $this->generic_model->save($datos_bill_asiento_contable, $table_name);
+                }
+
+                $table_name = 'bill_asiento_contable_det';
+
+                $id_asiento_nuevo = mysql_insert_id();
+//                echo '<br>Asiento id: ' . $id_asiento_nuevo;
+
+
+                /* Registro en tabla bill_asiento_contable_det */
+                foreach ($asiento_contable_det as $row) {
+//                    echo 'Asiento contable det:<br>';
+                    $datos_bill_asiento_contable_det['asiento_contable_id'] = $id_asiento_nuevo;
+                    $datos_bill_asiento_contable_det['cuenta_cont_id'] = $row->contacuentasplan_cod;
+                    $datos_bill_asiento_contable_det['debito'] = $row->debe;
+                    $datos_bill_asiento_contable_det['credito'] = $row->haber;
+                    $datos_bill_asiento_contable_det['tipotransaccion_cod'] = $row->tipotransaccion_cod;
+                    $datos_bill_asiento_contable_det['doc_id'] = $doc_id;
+                    $datos_bill_asiento_contable_det['detalle'] = $row->descripcion;
+                    $datos_bill_asiento_contable_det['tipo_pago'] = '04';
+                    $datos_bill_asiento_contable_det['doc_id_pago'] = $cheque_id->id;
+//                    print_r($row);
+
+                    $this->generic_model->save($datos_bill_asiento_contable_det, $table_name);
+                }
+            } 
+        }
+    }
+
 }
