@@ -347,6 +347,10 @@ class Index extends MX_Controller {
                 $table_name = 'bill_asiento_contable_det';
 
                 $id_asiento_nuevo = mysql_insert_id();
+                //Actualizamos el movimiento bancario de este cheque si ya esta registrado
+                $this->generic_model->update('bill_cuentabancaria', 
+                        array('asiento_id' => $id_asiento_nuevo), array('tipo_transaccion' => '28', 'doc_id' => $doc_id));
+
 //                echo '<br>Asiento id: ' . $id_asiento_nuevo;
 
 

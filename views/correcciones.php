@@ -49,7 +49,7 @@ echo Open('form', array('action'=>  base_url('correcciones/index/corregir_costo_
 echo Close('form');
 
 echo Open('form', array('action'=>  base_url('correcciones/index/asientos_transfer_all'),'method'=>'post'));
-    echo tagcontent('button', 'Transferir todos los asientos antiguos', array('id'=>'ajaxformbtn','data-target'=>'correccion_k_bod_out','class'=>'btn btn-success'));
+    echo tagcontent('button', 'Transferir todos los asientos antiguos de cheques de pago', array('id'=>'ajaxformbtn','data-target'=>'correccion_k_bod_out','class'=>'btn btn-success'));
 echo Close('form');
 
 echo Open('form', array('action'=>  base_url('correcciones/index/reset_cuentas'),'method'=>'post'));
