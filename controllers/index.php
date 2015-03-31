@@ -219,17 +219,20 @@ class Index extends MX_Controller {
           WHERE cta.tipo_id = 4 AND  cta.banco_id = cs.banco_id
           )
          */
-        $banco = $this->generic_model->get('bill_cuentabancaria cta', null, 'banco_id, saldo');
+        $banco = $this->generic_model->get('billing_banco cta', null, 'id, saldo_inicial');
 
         $table_name = 'bill_cuentabancaria_saldos cs';
         foreach ($banco as $dato) {
-            $where_data = array('cs.banco_id' => $dato->banco_id);
+            $where_data = array('cs.banco_id' => $dato->id);
 
-            $data_set = array('saldo' => $dato->saldo);
+            $data_set = array('saldo' => $dato->saldo_inicial);
             $this->generic_model->update($table_name, $data_set, $where_data);
+            $this->generic_model->update('bill_cuentabancaria', 
+                    array('credito'=>$dato->saldo_inicial,
+                        'saldo'=>$dato->saldo_inicial), 
+                    array('banco_id'=>$dato->id));
         }
-
-        echo '<br>Saldos de cuentas actualizados a saldos iniciales';
+        echo success_msg('<br>Saldos de cuentas actualizados a saldos iniciales');
     }
 
     function tiene_asiento($comprobante_id, $id_cheque_pago) {
